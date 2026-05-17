@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Address Search</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: white;
+    }
+
+    #autocomplete {
+      width: 100%;
+      height: 50px;
+      font-size: 16px;
+      padding: 12px;
+      border: none;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    .container {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <input id="autocomplete" type="text" placeholder="Enter address..." />
+  </div>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC28UQHpsAYXJedTn5VhQYnhsdxt7-Y0jc&libraries=places"></script>
+
+  <script>
+    let autocomplete;
+
+    function initAutocomplete() {
+      const input = document.getElementById("autocomplete");
+
+      autocomplete = new google.maps.places.Autocomplete(input, {
+        types: ["address"]
+      });
+
+      autocomplete.addListener("place_changed", handleSelection);
+    }
+
+    function handleSelection() {
+      const place = autocomplete.getPlace();
+
+      if (!place || !place.address_components) return;
+
+      let street = "";
+      let city = "";
+      let state = "";
+      let zip = "";
+      let country = "";
+
+      place.address_components.forEach(component => {
+        const type = component.types[0];
+
+        if (type === "street_number") {
+          street = component.long_name + " " + street;
+        }
+
+        if (type === "route") {
+          street += component.short_name;
+        }
+
+        if (type === "locality") {
+          city = component.long_name;
+        }
+
+        if (type === "administrative_area_level_1") {
+          state = component.short_name;
+        }
+
+        if (type === "postal_code") {
+          zip = component.long_name;
+        }
+
+        if (type === "country") {
+          country = component.long_name;
+        }
+      });
+
+      const data = {
+        fullAddress: place.formatted_address,
+        street,
+        city,
+        state,
+        zip,
+        country,
+        placeId: place.place_id,
+        lat: place.geometry?.location?.lat(),
+        lng: place.geometry?.location?.lng()
+      };
+
+      sendToMake(data);
+    }
+
+    function sendToMake(data) {
+      fetch("https://hook.make.com/YOUR_WEBHOOK_URL", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      })
+      .then(() => {
+        console.log("Sent to Make ✅");
+
+        // Optional: clear input after selection
+        document.getElementById("autocomplete").value = "";
+      })
+      .catch(err => console.error(err));
+    }
+
+    window.onload = initAutocomplete;
+  </script>
+</body>
+</html>
