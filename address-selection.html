@@ -6,56 +6,60 @@
 
   <style>
     body {
-  margin: 0;
-  font-family: system-ui, -apple-system, sans-serif;
-  background: white;
-}
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: white;
+    }
 
-#autocomplete {
-  width: 100%;
-  height: 50px;
-  font-size: 16px;
-  padding: 12px;
-  border: none;
-  outline: none;
-  box-sizing: border-box;
-  
-white-space: nowrap;      /* ✅ ADD */
-  overflow: hidden;         /* ✅ ADD */
-  text-overflow: ellipsis;  /* ✅ ADD */
-}
-.container {
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  overflow: visible;
-  display: block;
-}
-.pac-container {
-  z-index: 999999 !important;
-  position: absolute !important;
-}
-html, body {
-  overflow: visible !important;
-}
+    #autocomplete {
+      width: 100%;
+      height: 50px;
+      font-size: 16px;
+      padding: 12px;
+      border: none;
+      outline: none;
+      box-sizing: border-box;
+
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .container {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      overflow: visible;
+    }
+
+    .pac-container {
+      z-index: 999999 !important;
+      position: absolute !important;
+    }
+
+    html, body {
+      overflow: visible !important;
+    }
+
+    input[readonly] {
+      background-color: #f5f5f5;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 
 <body>
   <div class="container">
     <input id="autocomplete" type="text" placeholder="Enter address..." />
-    <div style="margin-top:10px;">
-  <input id="street" placeholder="Street" style="width:100%; margin-bottom:5px;" readonly />
-<input id="city" placeholder="City" style="width:100%; margin-bottom:5px;" readonly />
-<input id="state" placeholder="State" style="width:100%; margin-bottom:5px;" readonly />
-<input id="zip" placeholder="Zip" style="width:100%;" readonly />
-input[readonly] {
-  background-color: #f5f5f5;
-  cursor: not-allowed;
-}
-      document.getElementById("street").scrollIntoView({ behavior: "smooth" 
 
-</div>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTFy2I3l2aKHHLShfTGUk7HMAoaO36pow&libraries=places"></script>
+    <div style="margin-top:10px;">
+      <input id="street" placeholder="Street" style="width:100%; margin-bottom:5px;" readonly />
+      <input id="city" placeholder="City" style="width:100%; margin-bottom:5px;" readonly />
+      <input id="state" placeholder="State" style="width:100%; margin-bottom:5px;" readonly />
+      <input id="zip" placeholder="Zip" style="width:100%;" readonly />
+    </div>
+  </div>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
 
   <script>
     let autocomplete;
@@ -67,11 +71,11 @@ input[readonly] {
         types: ["address"]
       });
 
-      
-autocomplete.addListener("place_changed", function () {
-  handleSelection();
-});
+      autocomplete.addListener("place_changed", function () {
+        handleSelection();
+      });
     }
+
     function handleSelection() {
       const place = autocomplete.getPlace();
 
@@ -95,58 +99,3 @@ autocomplete.addListener("place_changed", function () {
         }
 
         if (type === "locality") {
-          city = component.long_name;
-        }
-
-        if (type === "administrative_area_level_1") {
-          state = component.short_name;
-        }
-
-        if (type === "postal_code") {
-          zip = component.long_name;
-        }
-
-        if (type === "country") {
-          country = component.long_name;
-        }
-      });
-       document.getElementById("street").disabled = true;
-      document.getElementById("city").disabled = true;
-      document.getElementById("state").disabled = true;
-      document.getElementById("zip").disabled = true;
-      document.getElementById("autocomplete").blur();
-      
-      const data = {
-        fullAddress: place.formatted_address,
-        street,
-        city,
-        state,
-        zip,
-        country,
-        placeId: place.place_id,
-        lat: place.geometry?.location?.lat(),
-        lng: place.geometry?.location?.lng()
-      };
-
-      sendToMake(data);
-    }
-
-    function sendToMake(data) {
-      fetch("https://hook.us2.make.com/8tt2jrxyb36lnt90nj69ull5x43oynyh", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-      })
-      .then(() => {
-        console.log("Sent to Make ✅");
-
-      })
-      .catch(err => console.error(err));
-    }
-
-    window.onload = initAutocomplete;
-  </script>
-</body>
-</html>
