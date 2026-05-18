@@ -105,15 +105,10 @@
         types: ["address"]
       });
 
-      google.maps.event.addListener(autocomplete, 'place_changed', handleSelection);
+      autocomplete.addListener("place_changed", function () {
+        handleSelection();
+      });
     }
-    function handleSelection() {
-  console.log("✅ place_changed fired");
-  const place = autocomplete.getPlace();
-  console.log("✅ place object:", place);
-
-  // ... your existing code ...
-}
 
     function handleSelection() {
       const place = autocomplete.getPlace();
@@ -179,23 +174,18 @@
       sendToMake(data);
     }
 
-    
-function sendToMake(data) {
-  console.log("🔥 SENDING TO MAKE:", data);
-
-  fetch("https://hook.us2.make.com/8tt2jrxyb36lnt90nj69ull5x43oynyh", {
+    function sendToMake(data) {
+  fetch("https://hook.us2.make.com/ik5pco4zr3ybr9cmf35xlgxd57o1p8mg", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "text/plain"
     },
     body: JSON.stringify(data)
   })
-  .then(response => {
-    console.log("✅ RESPONSE:", response);
+  .then(() => {
+    console.log("Sent to Make ✅");
   })
-  .catch(err => {
-    console.error("❌ ERROR:", err);
-  });
+  .catch(err => console.error(err));
 }
 
 
