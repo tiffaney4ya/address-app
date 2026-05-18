@@ -174,19 +174,25 @@
       sendToMake(data);
     }
 
-    function sendToMake(data) {
-      fetch("https://hook.us2.make.com/ik5pco4zr3ybr9cmf35xlgxd57o1p8mg", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-      })
-      .then(() => {
-        console.log("Sent to Make ✅");
-      })
-      .catch(err => console.error(err));
-    }
+    
+function sendToMake(data) {
+  console.log("🔥 SENDING TO MAKE:", data);
+
+  fetch("https://hook.us2.make.com/8tt2jrxyb36lnt90nj69ull5x43oynyh", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(data)
+  })
+  .then(response => {
+    console.log("✅ RESPONSE:", response);
+  })
+  .catch(err => {
+    console.error("❌ ERROR:", err);
+  });
+}
+
 
     window.onload = initAutocomplete;
   </script>
