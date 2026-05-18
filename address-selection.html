@@ -43,8 +43,18 @@ html, body {
 <body>
   <div class="container">
     <input id="autocomplete" type="text" placeholder="Enter address..." />
-  </div>
+    <div style="margin-top:10px;">
+  <input id="street" placeholder="Street" style="width:100%; margin-bottom:5px;" readonly />
+<input id="city" placeholder="City" style="width:100%; margin-bottom:5px;" readonly />
+<input id="state" placeholder="State" style="width:100%; margin-bottom:5px;" readonly />
+<input id="zip" placeholder="Zip" style="width:100%;" readonly />
+input[readonly] {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+      document.getElementById("street").scrollIntoView({ behavior: "smooth" 
 
+</div>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTFy2I3l2aKHHLShfTGUk7HMAoaO36pow&libraries=places"></script>
 
   <script>
@@ -57,9 +67,11 @@ html, body {
         types: ["address"]
       });
 
-      autocomplete.addListener("place_changed", handleSelection);
+      
+autocomplete.addListener("place_changed", function () {
+  handleSelection();
+});
     }
-
     function handleSelection() {
       const place = autocomplete.getPlace();
 
@@ -98,7 +110,12 @@ html, body {
           country = component.long_name;
         }
       });
-
+       document.getElementById("street").disabled = true;
+      document.getElementById("city").disabled = true;
+      document.getElementById("state").disabled = true;
+      document.getElementById("zip").disabled = true;
+      document.getElementById("autocomplete").blur();
+      
       const data = {
         fullAddress: place.formatted_address,
         street,
