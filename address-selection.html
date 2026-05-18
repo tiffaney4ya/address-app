@@ -11,6 +11,13 @@
       background: white;
     }
 
+    .container {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      overflow: visible;
+      padding: 10px;   /* ✅ polish */
+    }
+
     #autocomplete {
       width: 100%;
       height: 50px;
@@ -20,15 +27,40 @@
       outline: none;
       box-sizing: border-box;
 
+      border-radius: 8px;
+      background: #f5f5f5;
+
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    .container {
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      overflow: visible;
+    /* ✅ FORM LAYOUT */
+    .form {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form input {
+      width: 100%;
+      height: 44px;
+      padding: 10px 12px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: none;
+      background-color: #f5f5f5;
+      box-sizing: border-box;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .row input {
+      width: 100%;
     }
 
     .pac-container {
@@ -39,24 +71,26 @@
     html, body {
       overflow: visible !important;
     }
-
-    input[readonly] {
-      background-color: #f5f5f5;
-      cursor: not-allowed;
-    }
   </style>
 </head>
 
 <body>
   <div class="container">
+
+    <!-- ✅ MAIN SEARCH -->
     <input id="autocomplete" type="text" placeholder="Enter address..." />
 
-    <div style="margin-top:10px;">
-      <input id="street" placeholder="Street" style="width:100%; margin-bottom:5px;" readonly />
-      <input id="city" placeholder="City" style="width:100%; margin-bottom:5px;" readonly />
-      <input id="state" placeholder="State" style="width:100%; margin-bottom:5px;" readonly />
-      <input id="zip" placeholder="Zip" style="width:100%;" readonly />
+    <!-- ✅ STRUCTURED FORM -->
+    <div class="form">
+      <input id="street" placeholder="Street" readonly />
+      <input id="city" placeholder="City" readonly />
+
+      <div class="row">
+        <input id="state" placeholder="State" readonly />
+        <input id="zip" placeholder="Zip" readonly />
+      </div>
     </div>
+
   </div>
 
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTFy2I3l2aKHHLShfTGUk7HMAoaO36pow&libraries=places"></script>
@@ -115,7 +149,7 @@
         }
       });
 
-      /* ✅ FILL THE FORM */
+      /* ✅ FILL FORM */
       document.getElementById("street").value = street;
       document.getElementById("city").value = city;
       document.getElementById("state").value = state;
@@ -156,5 +190,7 @@
 
     window.onload = initAutocomplete;
   </script>
+
 </body>
 </html>
+
