@@ -105,10 +105,15 @@
         types: ["address"]
       });
 
-      autocomplete.addListener("place_changed", function () {
-        handleSelection();
-      });
+      google.maps.event.addListener(autocomplete, 'place_changed', handleSelection);
     }
+    function handleSelection() {
+  console.log("✅ place_changed fired");
+  const place = autocomplete.getPlace();
+  console.log("✅ place object:", place);
+
+  // ... your existing code ...
+}
 
     function handleSelection() {
       const place = autocomplete.getPlace();
