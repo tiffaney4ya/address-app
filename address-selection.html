@@ -94,7 +94,7 @@
       const input = document.getElementById("autocomplete");
 
       autocomplete = new google.maps.places.Autocomplete(input, {
-        types: ["address"],
+        types: ["geocode"],
         componentRestrictions: { country: "us" },
         fields: [
           "formatted_address",
