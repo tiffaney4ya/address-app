@@ -82,8 +82,8 @@
     </div>
   </div>
 
-  <script>
-    const MAKE_WEBHOOK_URL = "https://hook.us2.make.com/ik5pco4zr3ybr9cmf35xlgxd57o1p8mg";
+  </script>
+    const MAKE_WEBHOOK_URL = "YOUR_MAKE_WEBHOOK_URL";
 
     const params = new URLSearchParams(window.location.search);
     const rowID = params.get("rowID") || "";
@@ -94,7 +94,7 @@
       const input = document.getElementById("autocomplete");
 
       autocomplete = new google.maps.places.Autocomplete(input, {
-        types: ["geocode"],
+        types: ["address"],
         componentRestrictions: { country: "us" },
         fields: [
           "formatted_address",
@@ -192,7 +192,7 @@
     }
 
     function sendToMake(data) {
-      fetch(https://hook.us2.make.com/ik5pco4zr3ybr9cmf35xlgxd57o1p8mg, {
+      fetch("https://hook.us2.make.com/ik5pco4zr3ybr9cmf35xlgxd57o1p8mg"), {
         method: "POST",
         headers: {
           "Content-Type": "text/plain"
@@ -209,13 +209,12 @@
           console.error("Send to Make failed ❌", err);
         });
     }
-  
+
+    
   </script>
     window.onload = initAutocomplete;
-  </script>
-
   <script>
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTFy2I3l2aKHHLShfTGUk7HMAoaO36pow&amp;libraries=places"
+    src=("https://maps.googleapis.com/maps/api/js?key=AIzaSyBTFy2I3l2aKHHLShfTGUk7HMAoaO36pow&amplibraries=places&ampcallback=initAutocomplete")
     async
     defer>
   </script>
