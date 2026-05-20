@@ -96,6 +96,9 @@
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTFy2I3l2aKHHLShfTGUk7HMAoaO36pow&libraries=places"></script>
 
   <script>
+    const params = new URLSearchParams(window.location.search);
+const rowID = params.get("rowID");
+    
     let autocomplete;
 
     function initAutocomplete() {
@@ -160,16 +163,15 @@
 
       /* ✅ SEND TO MAKE */
       const data = {
-        fullAddress: place.formatted_address,
-        street,
-        city,
-        state,
-        zip,
-        country,
-        placeId: place.place_id,
-        lat: place.geometry?.location?.lat(),
-        lng: place.geometry?.location?.lng()
-      };
+  rowID: rowID,
+  fullAddress: fullAddress,
+  street: street,
+  city: city,
+  state: state,
+  zip: zip,
+  lat: lat,
+  lng: lng
+};
 
       sendToMake(data);
     }
