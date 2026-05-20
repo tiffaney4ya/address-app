@@ -8,13 +8,15 @@
   <style>
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: system-ui, -apple-system, sans-serif;
       background: white;
     }
 
     .container {
-      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
       overflow: visible;
+      padding: 10px;
     }
 
     #autocomplete {
@@ -25,8 +27,13 @@
       border: none;
       outline: none;
       box-sizing: border-box;
+
       border-radius: 8px;
       background: #f5f5f5;
+
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .form {
@@ -56,6 +63,7 @@
       width: 100%;
     }
 
+    /* Google Autocomplete dropdown */
     .pac-container {
       z-index: 999999 !important;
       position: absolute !important;
@@ -74,19 +82,35 @@
     <div class="form">
       <input id="street" placeholder="Street" readonly />
       <input id="city" placeholder="City" readonly />
-
       <div class="row">
         <input id="state" placeholder="State" readonly />
         <input id="zip" placeholder="Zip" readonly />
       </div>
     </div>
+
+    <!-- Optional on-screen debug -->
+    <div id="debug" style="margin-top:8px;font-size:12px;color:#666;"></div>
   </div>
 
-  </script>
-    const MAKE_WEBHOOK_URL = "YOUR_MAKE_WEBHOOK_URL";
+  <!-- IMPORTANT: this must be a real script tag -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTFy2I3l2aKHHLShfTGUk7HMAoaO36pow&libraries=places"></script>
 
-    const params = new URLSearchParams(window.location.search);
-    const rowID = params.get("rowID") || "";
+  <script>
+    /***********************
+     * 1) Read rowID safely
+     *    Fix &amp; encoding
+     ***********************/
+    const fixedSearch = (window.location.search || "").replaceAll("&amp;", "&");
+    const params = new URLSearchParams(fixedSearch);
+
+    const rowIDRaw = params.get("rowID") || "";
+    const rowID = rowIDRaw.split("&")[0].split("&amp;")[0].trim();
+
+    // Debug
+    console.log("ROW ID RAW:", rowIDRaw);
+    console.log("ROW ID CLEAN:", rowID);
+    document.getElementById("debug").textContent =
+      rowID ? `RowID: ${rowID}` : "RowID: (missing)";
 
     let autocomplete;
 
@@ -94,129 +118,81 @@
       const input = document.getElementById("autocomplete");
 
       autocomplete = new google.maps.places.Autocomplete(input, {
-        types: ["address"],
-        componentRestrictions: { country: "us" },
-        fields: [
-          "formatted_address",
-          "address_components",
-          "geometry",
-          "place_id"
-        ]
+        types: ["address"]
       });
 
-      google.maps.event.addListener(
-        autocomplete,
-        "place_changed",
-        handleSelection
-      );
+      // Reliable listener
+      google.maps.event.addListener(autocomplete, "place_changed", handleSelection);
     }
 
     function handleSelection() {
       const place = autocomplete.getPlace();
+      if (!place || !place.address_components) return;
 
-      if (!place || !place.address_components) {
-        console.error("No place data returned.");
-        return;
-      }
-
-      let streetNumber = "";
-      let route = "";
+      let street = "";
       let city = "";
       let state = "";
       let zip = "";
       let country = "";
 
-      place.address_components.forEach((component) => {
-        const types = component.types;
+      place.address_components.forEach(component => {
+        const type = component.types[0];
 
-        if (types.includes("street_number")) {
-          streetNumber = component.long_name;
-        }
-
-        if (types.includes("route")) {
-          route = component.short_name;
-        }
-
-        if (types.includes("locality")) {
-          city = component.long_name;
-        }
-
-        if (!city && types.includes("postal_town")) {
-          city = component.long_name;
-        }
-
-        if (!city && types.includes("sublocality")) {
-          city = component.long_name;
-        }
-
-        if (types.includes("administrative_area_level_1")) {
-          state = component.short_name;
-        }
-
-        if (types.includes("postal_code")) {
-          zip = component.long_name;
-        }
-
-        if (types.includes("country")) {
-          country = component.long_name;
-        }
+        if (type === "street_number") street = component.long_name + " " + street;
+        if (type === "route") street += component.short_name;
+        if (type === "locality") city = component.long_name;
+        if (type === "administrative_area_level_1") state = component.short_name;
+        if (type === "postal_code") zip = component.long_name;
+        if (type === "country") country = component.long_name;
       });
 
-      const street = `${streetNumber} ${route}`.trim();
-      const fullAddress = place.formatted_address || "";
-      const lat = place.geometry?.location?.lat?.() || "";
-      const lng = place.geometry?.location?.lng?.() || "";
-      const placeId = place.place_id || "";
-
+      // Fill form
       document.getElementById("street").value = street;
       document.getElementById("city").value = city;
       document.getElementById("state").value = state;
       document.getElementById("zip").value = zip;
 
+      // Define previously-missing values (prevents crashes)
+      const fullAddress = place.formatted_address || "";
+      const lat = place.geometry?.location?.lat?.() ?? null;
+      const lng = place.geometry?.location?.lng?.() ?? null;
+
+      // UX polish
+      document.getElementById("autocomplete").blur();
+
+      // Payload to Make (includes rowID)
       const data = {
-        rowId: rowID,
-        value: {
-          fullAddress,
-          street,
-          city,
-          state,
-          zip,
-          country,
-          placeId,
-          lat,
-          lng
-        }
+        rowID: rowID,
+        fullAddress: fullAddress,
+        street: street,
+        city: city,
+        state: state,
+        zip: zip,
+        country: country,
+        lat: lat,
+        lng: lng,
+        placeId: place.place_id || ""
       };
 
       sendToMake(data);
     }
 
     function sendToMake(data) {
-      fetch("https://hook.us2.make.com/ik5pco4zr3ybr9cmf35xlgxd57o1p8mg"), {
+      console.log("Sending payload to Make:", data);
+
+      fetch("https://hook.us2.make.com/ik5pco4zr3ybr9cmf35xlgxd57o1p8mg", {
         method: "POST",
         headers: {
+          // Keep as text/plain to avoid browser preflight issues
           "Content-Type": "text/plain"
         },
         body: JSON.stringify(data)
       })
-        .then(() => {
-          console.log(
-            "Sent to Make ✅",
-            data.rowId ? `rowID: ${data.rowId}` : "(no rowID)"
-          );
-        })
-        .catch((err) => {
-          console.error("Send to Make failed ❌", err);
-        });
+      .then(() => console.log("Sent to Make ✅", data.rowID ? `(rowID: ${data.rowID})` : "(no rowID)"))
+      .catch(err => console.error("Send to Make failed ❌", err));
     }
 
-   window.onload = initAutocomplete; 
-  </script>
-    
-  <script>
-    src=("https://maps.googleapis.com/maps/api/js?key=AIzaSyBTFy2I3l2aKHHLShfTGUk7HMAoaO36pow&amplibraries=places&ampcallback=initAutocomplete")
-    async
-    defer>
+    window.onload = initAutocomplete;
   </script>
 </body>
 </html>
